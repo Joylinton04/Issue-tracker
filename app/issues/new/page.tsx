@@ -1,5 +1,5 @@
 "use client";
-import { Button, TextField } from "@radix-ui/themes";
+import { TextField } from "@radix-ui/themes";
 import React, { FormEvent, useState } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
@@ -28,7 +28,7 @@ const NewIssuePage = () => {
         placeholder="Description"
       />
 
-      <Button type="submit">Submit New Issue</Button>
+      <button type="submit" className="btn btn-primary rounded">Submit New Issue</button>
     </form>
   );
 };
