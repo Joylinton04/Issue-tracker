@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { Theme } from "@radix-ui/themes";
 import "./globals.css";
 import Navbar from "./Navbar";
+import { ToastContainer } from "react-toastify";
 
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RootLayout({
         <Theme accentColor="violet">
           <Navbar />
           <main className="px-6">{children}</main>
+          <ToastContainer autoClose={1200}/>
         </Theme>
       </body>
     </html>
