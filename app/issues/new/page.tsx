@@ -7,42 +7,49 @@ import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import z from "zod";
+import { issueSchema } from "@/app/validationSchemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Text } from "@radix-ui/themes/dist/cjs/components/callout.js";
 
 // Dynamically import SimpleMDE with ssr: false
 const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
   ssr: false,
 });
 
-interface FormProp {
-  title: string;
-  description: string;
-}
-
 const NewIssuePage = () => {
-  const { register, handleSubmit, control } = useForm<FormProp>();
-  const navigate = useRouter()
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<z.infer<typeof issueSchema>>({
+    resolver: zodResolver(issueSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
+  const navigate = useRouter();
 
-  const onSubmit = async (data: FormProp) => {
+  const onSubmit = async (data: z.infer<typeof issueSchema>) => {
     try {
-      await axios.post('/api/issues', data)
-      navigate.push('/issues')
-      toast.success("Issue Added")
+      await axios.post("/api/issues", data);
+      navigate.push("/issues");
+      toast.success("Issue Added");
     } catch (err) {
-      console.log(err)
-      toast.error("Something went wrong")
+      console.log(err);
+      toast.error("Something went wrong");
     }
-  }
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="max-w-xl space-y-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-4">
       <TextField.Root
         placeholder="title"
         {...register("title")}
       ></TextField.Root>
-
+      {errors.title && <p className="-mt-2 text-red-500">{errors.title.message}</p>}
       <Controller
         name="description"
         control={control}
@@ -50,7 +57,7 @@ const NewIssuePage = () => {
           <SimpleMDE placeholder="Description" {...field} />
         )}
       />
-
+      {errors.description && <p className="-mt-6 text-red-500">{errors.description.message}</p>}
       <button type="submit" className="btn btn-primary rounded">
         Submit New Issue
       </button>
