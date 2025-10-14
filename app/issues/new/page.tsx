@@ -1,34 +1,59 @@
 "use client";
 import { TextField } from "@radix-ui/themes";
-import React, { FormEvent, useState } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
+import { useForm, Controller } from "react-hook-form";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 // Dynamically import SimpleMDE with ssr: false
 const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
   ssr: false,
 });
 
+interface FormProp {
+  title: string;
+  description: string;
+}
+
 const NewIssuePage = () => {
-  const [description, setDescription] = useState("");
+  const { register, handleSubmit, control } = useForm<FormProp>();
+  const navigate = useRouter()
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-
-    console.log("Submitting Issue:", { description });
-  };
+  const onSubmit = async (data: FormProp) => {
+    try {
+      await axios.post('/api/issues', data)
+      navigate.push('/issues')
+      toast.success("Issue Added")
+    } catch (err) {
+      console.log(err)
+      toast.error("Something went wrong")
+    }
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
-      <TextField.Root placeholder="title"></TextField.Root>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="max-w-xl space-y-4"
+    >
+      <TextField.Root
+        placeholder="title"
+        {...register("title")}
+      ></TextField.Root>
 
-      <SimpleMDE
-        value={description}
-        onChange={(e) => setDescription(e)}
-        placeholder="Description"
+      <Controller
+        name="description"
+        control={control}
+        render={({ field }) => (
+          <SimpleMDE placeholder="Description" {...field} />
+        )}
       />
 
-      <button type="submit" className="btn btn-primary rounded">Submit New Issue</button>
+      <button type="submit" className="btn btn-primary rounded">
+        Submit New Issue
+      </button>
     </form>
   );
 };
