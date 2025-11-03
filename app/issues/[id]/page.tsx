@@ -1,26 +1,36 @@
+import IssueStatusBadge from "@/app/components/IssueStatusBadge";
+import MarkdownRenderer from "@/component/MarkdownRenderer";
 import { prisma } from "@/prisma/client";
+import { Card, Heading, Text } from "@radix-ui/themes";
 import { notFound } from "next/navigation";
-import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 const IssueDetailPage = async ({ params }: Props) => {
-  if(typeof params.id !== 'number') notFound();
+  const { id } = await params;
+
+  if (!parseInt(id)) notFound();
 
   const issue = await prisma.issue.findUnique({
-    where: { id: parseInt(params.id) },
+    where: { id: parseInt(id) },
   });
 
-  if (!issue) return <>No issue found</>;
+  if (!issue) notFound();
 
   return (
     <div>
-      <p>{issue.title}</p>
-      <p>{issue.description}</p>
-      <p>{issue.status}</p>
-      <p>{issue.createdAt.toDateString()}</p>
+      <Heading>{issue.title}</Heading>
+      <div className="flex items-center gap-2 my-2">
+        <IssueStatusBadge status={issue.status} />
+        <Text>{issue.createdAt.toDateString()}</Text>
+      </div>
+      <Card className="">
+        <MarkdownRenderer content={issue.description} />
+      </Card>
     </div>
   );
 };

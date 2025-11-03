@@ -4,11 +4,13 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import IssueActions from "./IssueActions";
 
-const loadingIssues = () => {
+const loadingIssues = async () => {
   const issues = [1, 2, 3, 4, 5];
 
+
+
   return (
-    <>
+    <div>
     <IssueActions/>
       <Table.Root variant="surface" className="mt-5">
         <Table.Header>
@@ -37,7 +39,7 @@ const loadingIssues = () => {
           ))}
         </Table.Body>
       </Table.Root>
-    </>
+    </div>
   );
 };
 
