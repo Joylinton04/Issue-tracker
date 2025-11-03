@@ -1,6 +1,6 @@
 "use client";
 import { TextField } from "@radix-ui/themes";
-import React from "react";
+import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { useForm, Controller } from "react-hook-form";
@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import z from "zod";
 import { issueSchema } from "@/app/validationSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Text } from "@radix-ui/themes/dist/cjs/components/callout.js";
 
 // Dynamically import SimpleMDE with ssr: false
 const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
@@ -18,6 +17,8 @@ const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
 });
 
 const NewIssuePage = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -34,10 +35,12 @@ const NewIssuePage = () => {
 
   const onSubmit = async (data: z.infer<typeof issueSchema>) => {
     try {
+      setIsSubmitting(true);
       await axios.post("/api/issues", data);
       navigate.push("/issues");
       toast.success("Issue Added");
     } catch (err) {
+      setIsSubmitting(false);
       console.log(err);
       toast.error("Something went wrong");
     }
@@ -49,7 +52,9 @@ const NewIssuePage = () => {
         placeholder="title"
         {...register("title")}
       ></TextField.Root>
-      {errors.title && <p className="-mt-2 text-red-500">{errors.title.message}</p>}
+      {errors.title && (
+        <p className="-mt-2 text-red-500">{errors.title.message}</p>
+      )}
       <Controller
         name="description"
         control={control}
@@ -57,9 +62,16 @@ const NewIssuePage = () => {
           <SimpleMDE placeholder="Description" {...field} />
         )}
       />
-      {errors.description && <p className="-mt-6 text-red-500">{errors.description.message}</p>}
-      <button type="submit" className="btn btn-primary rounded">
+      {errors.description && (
+        <p className="-mt-6 text-red-500">{errors.description.message}</p>
+      )}
+      <button
+        type="submit"
+        className="btn btn-primary rounded"
+        disabled={isSubmitting}
+      >
         Submit New Issue
+        {isSubmitting && <span className="loading loading-spinner"></span>}
       </button>
     </form>
   );
